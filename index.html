@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surprise Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .game-board {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .box-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 30px auto;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #f5576c;
+        }
+
+        .clickable-box {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .clickable-box:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .clickable-box:active {
+            transform: scale(0.95);
+        }
+
+        .click-counter {
+            font-size: 18px;
+            color: #666;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .guess-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .guess-section.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .guess-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .guess-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .guess-input:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+
+        .submit-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .attempts-left {
+            font-size: 14px;
+            color: #f5576c;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .surprise-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .surprise-container.active {
+            display: flex;
+        }
+
+        .surprise-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .surprise-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 20px;
+            object-fit: cover;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .surprise-word {
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            margin-top: 20px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .surprise-text {
+            font-size: 36px;
+            color: white;
+            margin-top: 20px;
+            font-weight: bold;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            animation: slideUp 1s ease 0.2s both;
+        }
+
+        /* Falling items animation */
+        .falling-item {
+            position: absolute;
+            animation: fall 3s linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .balloon {
+            width: 40px;
+            height: 50px;
+            border-radius: 50% 50% 50% 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .ribbon {
+            width: 4px;
+            height: 60px;
+            background: linear-gradient(to right, #ff6b9d, #ffd93d);
+        }
+
+        .confetti {
+            width: 10px;
+            height: 10px;
+            display: inline-block;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-board">
+            <div class="title">🎮 Surprise Game</div>
+            <div class="subtitle">Click the box 5 times to reveal the surprise!</div>
+
+            <div class="box-container">
+                <div class="clickable-box" id="clickBox">🎁</div>
+            </div>
+
+            <div class="click-counter">
+                Clicks: <span id="clickCount">0</span>/5
+            </div>
+
+            <div class="guess-section" id="guessSection">
+                <div class="guess-text">
+                    Can you guess a word that describes the person who sent this to you? 🤔
+                </div>
+                <div class="input-group">
+                    <input type="text" class="guess-input" id="guessInput" placeholder="Type your guess...">
+                    <button class="submit-btn" id="submitBtn">Send</button>
+                </div>
+                <div class="attempts-left">
+                    Attempts remaining: <span id="attemptsLeft">3</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="surprise-container" id="surpriseContainer">
+        <div class="surprise-content">
+            <img src="" id="surpriseImage" class="surprise-image" alt="Surprise!">
+            <div class="surprise-word" id="surpriseWord">Ichi aki</div>
+            <div class="surprise-text">🎉 SURPRISE! 🎉</div>
+        </div>
+    </div>
+
+    <script>
+        const clickBox = document.getElementById('clickBox');
+        const clickCount = document.getElementById('clickCount');
+        const guessSection = document.getElementById('guessSection');
+        const guessInput = document.getElementById('guessInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const attemptsLeft = document.getElementById('attemptsLeft');
+        const surpriseContainer = document.getElementById('surpriseContainer');
+        const surpriseImage = document.getElementById('surpriseImage');
+
+        const boxContainer = document.querySelector('.box-container');
+        const MAX_CLICKS = 5;
+        const MAX_ATTEMPTS = 3;
+        const TARGET_WORD = 'ichi aki';
+
+        let clicks = 0;
+        let attempts = MAX_ATTEMPTS;
+        let gameEnded = false;
+
+        // Set the image
+        surpriseImage.src = '/data/.openclaw/media/inbound/file_30---44ce0ac3-f381-4565-bd8e-e1b0d835a641.jpg';
+
+        clickBox.addEventListener('click', () => {
+            if (gameEnded) return;
+
+            clicks++;
+            clickCount.textContent = clicks;
+
+            // Move box to random position
+            if (clicks < MAX_CLICKS) {
+                moveBox();
+            } else {
+                // Show guess section
+                guessSection.classList.add('active');
+                clickBox.style.display = 'none';
+            }
+        });
+
+        function moveBox() {
+            const maxX = boxContainer.clientWidth - 100;
+            const maxY = boxContainer.clientHeight - 100;
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+
+            clickBox.style.transform = `translate(${randomX}px, ${randomY}px)`;
+        }
+
+        submitBtn.addEventListener('click', checkGuess);
+        guessInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkGuess();
+        });
+
+        function checkGuess() {
+            const guess = guessInput.value.toLowerCase().trim();
+            attempts--;
+            attemptsLeft.textContent = attempts;
+
+            // Check if guess is similar to target
+            if (guess === TARGET_WORD || isSimilar(guess, TARGET_WORD)) {
+                revealSurprise();
+            } else if (attempts <= 0) {
+                // Attempts exhausted, reveal anyway
+                revealSurprise();
+            } else {
+                // Clear input and let them try again
+                guessInput.value = '';
+                guessInput.focus();
+            }
+        }
+
+        function isSimilar(guess, target) {
+            // Accept partial matches like "ichi" or "aki"
+            const words = target.split(' ');
+            return words.some(word => guess.includes(word)) || target.includes(guess);
+        }
+
+        function revealSurprise() {
+            gameEnded = true;
+            guessSection.classList.remove('active');
+            surpriseContainer.classList.add('active');
+
+            // Create falling confetti/balloons
+            createFallingItems();
+        }
+
+        function createFallingItems() {
+            const container = document.querySelector('.surprise-content');
+            const items = ['🎈', '🎀', '✨', '🎉', '🎊', '💝'];
+
+            for (let i = 0; i < 30; i++) {
+                const item = document.createElement('div');
+                item.className = 'falling-item';
+                item.textContent = items[Math.floor(Math.random() * items.length)];
+                item.style.left = Math.random() * 100 + '%';
+                item.style.fontSize = Math.random() * 20 + 20 + 'px';
+                item.style.animationDelay = Math.random() * 0.5 + 's';
+                item.style.animationDuration = Math.random() * 2 + 2.5 + 's';
+                container.appendChild(item);
+            }
+        }
+    </script>
+</body>
+</html>
