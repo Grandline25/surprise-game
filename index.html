@@ -300,7 +300,7 @@
 
             <div class="guess-section" id="guessSection">
                 <div class="guess-text">
-                    Can you guess a word that describes the person who sent this to you? 🤔
+                    What word does the sender normally call you? 🤔
                 </div>
                 <div class="input-group">
                     <input type="text" class="guess-input" id="guessInput" placeholder="Type your guess...">
@@ -316,7 +316,7 @@
     <div class="surprise-container" id="surpriseContainer">
         <div class="surprise-content">
             <img src="" id="surpriseImage" class="surprise-image" alt="Surprise!">
-            <div class="surprise-word" id="surpriseWord">Ichi aki</div>
+            <div class="surprise-word" id="surpriseWord">Bbym</div>
             <div class="surprise-text">🎉 SURPRISE! 🎉</div>
         </div>
     </div>
@@ -330,18 +330,35 @@
         const attemptsLeft = document.getElementById('attemptsLeft');
         const surpriseContainer = document.getElementById('surpriseContainer');
         const surpriseImage = document.getElementById('surpriseImage');
+        const surpriseWord = document.getElementById('surpriseWord');
 
         const boxContainer = document.querySelector('.box-container');
         const MAX_CLICKS = 5;
         const MAX_ATTEMPTS = 3;
-        const TARGET_WORD = 'ichi aki';
+        const TARGET_WORDS = ['bbym', 'baby', 'babe']; // Accept variations
 
         let clicks = 0;
         let attempts = MAX_ATTEMPTS;
         let gameEnded = false;
 
-        // Set the image
-        surpriseImage.src = '/data/.openclaw/media/inbound/file_30---44ce0ac3-f381-4565-bd8e-e1b0d835a641.jpg';
+        // Convert image to data URL for proper loading
+        const imageUrl = '/data/.openclaw/media/inbound/file_32---a5fa6bbb-896b-462d-857d-b873964e0133.jpg';
+        
+        // Try loading the image
+        const img = new Image();
+        img.onload = function() {
+            surpriseImage.src = imageUrl;
+        };
+        img.onerror = function() {
+            // If image fails, use a placeholder
+            surpriseImage.style.background = 'rgba(255,255,255,0.2)';
+            surpriseImage.textContent = '💕';
+            surpriseImage.style.display = 'flex';
+            surpriseImage.style.alignItems = 'center';
+            surpriseImage.style.justifyContent = 'center';
+            surpriseImage.style.fontSize = '100px';
+        };
+        img.src = imageUrl;
 
         clickBox.addEventListener('click', () => {
             if (gameEnded) return;
@@ -378,8 +395,8 @@
             attempts--;
             attemptsLeft.textContent = attempts;
 
-            // Check if guess is similar to target
-            if (guess === TARGET_WORD || isSimilar(guess, TARGET_WORD)) {
+            // Check if guess matches any target word
+            if (TARGET_WORDS.some(word => guess.includes(word) || word.includes(guess))) {
                 revealSurprise();
             } else if (attempts <= 0) {
                 // Attempts exhausted, reveal anyway
@@ -389,12 +406,6 @@
                 guessInput.value = '';
                 guessInput.focus();
             }
-        }
-
-        function isSimilar(guess, target) {
-            // Accept partial matches like "ichi" or "aki"
-            const words = target.split(' ');
-            return words.some(word => guess.includes(word)) || target.includes(guess);
         }
 
         function revealSurprise() {
